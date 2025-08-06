@@ -68,7 +68,7 @@
      
      // Constants for time rules
      const SHOW_TIME_MS = 5 * 60 * 1000; // 7 minutes
-     const FIRST_DELAY_MS = 2 * 1000; // 10 minutes delay
+     const FIRST_DELAY_MS = 10 * 60 * 1000; // 10 minutes delay
      const WEEKLY_INTERVAL_MS =  7 * 24 * 60 * 60 * 1000; // 7 days
      
      // Function to show the popup
