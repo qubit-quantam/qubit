@@ -60,8 +60,8 @@ function updateEmbedSources() {
   // Note: Vidlink.pro and embed.su use TMDB ID,
   // while 2embed.stream and 2embed.cc use IMDb ID.
   const server1Url = `https://vidlink.pro/movie/${movieId}`;
-  const server2Url = `https://embed.su/embed/movie/${movieId}`;
-  const server3Url = `https://www.2embed.stream/embed/movie/${imdbId}`;
+  const server2Url = `https://vidfast.pro/embed/movie/${movieId}`;
+  const server3Url = `https://vidsrc.su/embed/movie/${imdbId}`;
   const server4Url = `https://www.2embed.cc/embed/movie/${imdbId}`;
   const server5Url = `https://player.videasy.net/embed/movie/${movieId}?autoplay=true`;
   const server6Url = `https://player.autoembed.cc/embed/movie/${movieId}`;
