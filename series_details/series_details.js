@@ -1,11 +1,13 @@
 // Global variables for IMDb ID and embed URLs
 let imdbId;
 let embedSources = [];
+// Track the currently selected server index
+let currentServerIndex = 0;
 
 // Helper: get URL parameter by name
 function getParameterByName(name, url) {
   if (!url) url = window.location.href;
-  name = name.replace(/[\[\]]/g, '\\$&');
+  name = name.replace(/[[\]]/g, '\\$&');
   var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
       results = regex.exec(url);
   if (!results) return null;
@@ -90,7 +92,6 @@ document.addEventListener("DOMContentLoaded", function() {
   // Fetch episodes for the selected season and populate the episode select dropdown
   seasonSelect.addEventListener('change', function() {
     const seasonNumber = this.value;
-    // Clear episode dropdown
     episodeSelect.innerHTML = '';
     fetchEpisodesForSeason(seasonNumber);
   });
@@ -106,7 +107,6 @@ document.addEventListener("DOMContentLoaded", function() {
           option.textContent = `Episode ${episode.episode_number}`;
           episodeSelect.appendChild(option);
         });
-        // Once episodes are loaded, update the embed sources using current season and episode
         updateEmbedSources();
       })
       .catch(error => console.error('Error fetching episodes:', error));
@@ -132,56 +132,35 @@ document.addEventListener("DOMContentLoaded", function() {
   }
   
   // Build the embedSources array based on current IDs, season, and episode.
-  // Server order (new order):
-  // 1: Vidlink.pro (default)
-  // 2: watch.streamflix.one
-  // 3: embed.su
-  // 4: 2embed.stream
-  // 5: 2embed.cc
-  // 6: Videasy
-  // 7: Autoembed.cc
-  // 8: MoviesAPI.club
   function updateEmbedSources() {
-    // Ensure we have the required IDs (tmdb via seriesId always exists; imdbId is used by some providers)
     if (!seriesId || !imdbId) return;
-    
     const seasonNumber = seasonSelect.value;
     const episodeNumber = episodeSelect.value;
-    
-    // Build URLs using the correct ID type:
-    const server1Url = `https://vidlink.pro/tv/${seriesId}/${seasonNumber}/${episodeNumber}`;
-    const server2Url = `https://watch.streamflix.one/tv/${seriesId}/watch?server=1${seasonNumber && episodeNumber ? `&season=${seasonNumber}&episode=${episodeNumber}` : ''}`;
-    const server3Url = `https://embed.su/embed/tv/${seriesId}/${seasonNumber}/${episodeNumber}`;
-    const server4Url = `https://www.2embed.stream/embed/tv/${imdbId}/${seasonNumber}/${episodeNumber}`;
-    const server5Url = `https://www.2embed.cc/embedtv/${imdbId}&s=${seasonNumber}&e=${episodeNumber}`;
-    const server6Url = `https://player.videasy.net/tv/${seriesId}/${seasonNumber}/${episodeNumber}?nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&color=8B5CF6`;
-    const server7Url = `https://player.autoembed.cc/embed/tv/${seriesId}/${seasonNumber}/${episodeNumber}`;
-    const server8Url = `https://moviesapi.club/tv/${seriesId}-${seasonNumber}-${episodeNumber}`;
-    
+
     embedSources = [
-      server1Url, // Vidlink.pro (default)
-      server2Url, // watch.streamflix.one
-      server3Url, // embed.su
-      server4Url, // 2embed.stream
-      server5Url, // 2embed.cc
-      server6Url, // Videasy
-      server7Url, // Autoembed.cc
-      server8Url  // MoviesAPI.club
+      `https://vidlink.pro/tv/${seriesId}/${seasonNumber}/${episodeNumber}`,
+      `https://watch.streamflix.one/tv/${seriesId}/watch?server=1${seasonNumber && episodeNumber ? `&season=${seasonNumber}&episode=${episodeNumber}` : ''}`,
+      `https://embed.su/embed/tv/${seriesId}/${seasonNumber}/${episodeNumber}`,
+      `https://www.2embed.stream/embed/tv/${imdbId}/${seasonNumber}/${episodeNumber}`,
+      `https://www.2embed.cc/embedtv/${imdbId}&s=${seasonNumber}&e=${episodeNumber}`,
+      `https://player.videasy.net/tv/${seriesId}/${seasonNumber}/${episodeNumber}?nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&color=8B5CF6`,
+      `https://player.autoembed.cc/embed/tv/${seriesId}/${seasonNumber}/${episodeNumber}`,
+      `https://moviesapi.club/tv/${seriesId}-${seasonNumber}-${episodeNumber}`
     ];
-    
+
     console.log("Updated embed sources:", embedSources);
-    
-    // Immediately load the default embed (Vidlink.pro)
-    switchEmbed(embedSources[0]);
+    // Load the user’s last-selected server
+    switchEmbed(embedSources[currentServerIndex]);
   }
   
-  // Server switcher buttons: these let users override the default if needed.
+  // Server switcher buttons: let users override the default
   const serverButtons = document.querySelectorAll('.server-btn');
   serverButtons.forEach(btn => {
     btn.addEventListener('click', function() {
-      const index = parseInt(this.getAttribute('data-index'));
-      if (embedSources.length > index) {
-        switchEmbed(embedSources[index]);
+      const idx = parseInt(this.getAttribute('data-index'));
+      if (embedSources[idx]) {
+        currentServerIndex = idx;  // remember this choice
+        switchEmbed(embedSources[currentServerIndex]);
       }
     });
   });
